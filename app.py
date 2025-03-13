@@ -158,4 +158,4 @@ def all_stories():
     return render_template('all_stories.html', stories=stories, search_query=search_query)
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(host='0.0.0.0', port=10000)
