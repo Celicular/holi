@@ -81,10 +81,98 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.readAsDataURL(file);
     }
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent default form submission
+    // Function to show success modal
+    function showSuccessModal(story) {
+        const modal = document.querySelector('.success-modal');
+        const header = modal.querySelector('.success-modal-header h2');
+        const image = modal.querySelector('.success-story-image');
+        const place = modal.querySelector('.success-story-place');
+        const message = modal.querySelector('.success-story-message');
+        const readMoreText = modal.querySelector('.read-more-text');
+        const shareBtn = modal.querySelector('.share-btn');
+
+        // Set content
+        header.textContent = story.name;
+        image.src = story.image_url;
+        place.textContent = story.place;
+        message.textContent = story.message;
         
+        // Setup read more link
+        readMoreText.href = `/view/${story.id}`;
+        readMoreText.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = `/view/${story.id}`;
+        };
+
+        // Setup share button
+        shareBtn.onclick = async () => {
+            try {
+                // Create a blob from the image for sharing
+                const response = await fetch(story.image_url);
+                const blob = await response.blob();
+                const file = new File([blob], 'holi-story.png', { type: blob.type });
+
+                // Check if Web Share API is available
+                if (navigator.share) {
+                    await navigator.share({
+                        title: `Holi Story by ${story.name}`,
+                        text: `${story.message.substring(0, 100)}...`,
+                        url: `${window.location.origin}/view/${story.id}`,
+                        files: [file]
+                    }).then(() => {
+                        showAlert('Story shared successfully!', 'success');
+                    }).catch((error) => {
+                        if (error.name !== 'AbortError') {
+                            showAlert('Error sharing story', 'error');
+                        }
+                    });
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    const url = `${window.location.origin}/view/${story.id}`;
+                    navigator.clipboard.writeText(url).then(() => {
+                        showAlert('Link copied to clipboard!', 'success');
+                    }).catch(() => {
+                        showAlert('Error copying link', 'error');
+                    });
+                }
+            } catch (error) {
+                console.error('Error sharing:', error);
+                showAlert('Error sharing story', 'error');
+            }
+        };
+
+        // Show modal
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('visible');
+            modal.querySelector('.success-modal-content').classList.add('visible');
+        }, 10);
+
+        // Close button functionality
+        const closeBtn = modal.querySelector('.close');
+        closeBtn.onclick = () => {
+            modal.classList.remove('visible');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        };
+
+        // Close on outside click
+        window.onclick = (event) => {
+            if (event.target === modal) {
+                modal.classList.remove('visible');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+        };
+    }
+
+    // Update form submission handler
+    document.querySelector('.holi-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
         const submitBtn = this.querySelector('.submit-btn');
+        
         if (submitBtn.disabled) {
             return;
         }
@@ -92,35 +180,54 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span><div class="loading-spinner"></div>Sharing...</span>';
         
-        const formData = new FormData(form);
-        
-        fetch('/submit_story', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('Your story has been shared successfully!');
-                form.reset();
-                imagePreview.innerHTML = '';
-                updateWordCount();
-                // Reload the page after a short delay to show the new story
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            } else {
-                showAlert(data.message || 'An error occurred', 'error');
+        try {
+            const formData = new FormData(this);
+            const response = await fetch('/submit_story', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to submit story');
             }
-        })
-        .catch(error => {
+
+            let result;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                result = await response.json();
+            } else {
+                const text = await response.text();
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Invalid response from server');
+                }
+            }
+            
+            if (result.success) {
+                // Create story object for the modal
+                const story = {
+                    id: result.story_id,
+                    name: formData.get('name'),
+                    place: formData.get('city'),
+                    message: formData.get('message'),
+                    image_url: URL.createObjectURL(formData.get('image'))
+                };
+                
+                showSuccessModal(story);
+                this.reset();
+                document.getElementById('image-preview').innerHTML = '';
+                updateWordCount();
+            } else {
+                throw new Error(result.message || 'Failed to submit story');
+            }
+        } catch (error) {
             console.error('Error:', error);
-            showAlert('An error occurred while submitting your story', 'error');
-        })
-        .finally(() => {
+            showAlert(error.message, 'error');
+        } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<span>Share Your Story</span>';
-        });
+        }
     });
 
     messageTextarea.addEventListener('input', updateWordCount);
@@ -246,6 +353,31 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         }
     });
+
+    // Add staggered animation to story cards
+    const storyCards = document.querySelectorAll('.stories-grid-wide .story-card');
+    storyCards.forEach((card, index) => {
+        card.style.setProperty('--card-index', index);
+    });
+
+    // Intersection Observer for story cards
+    const observerOptionsCards = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observerCards = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                observerCards.unobserve(entry.target);
+            }
+        });
+    }, observerOptionsCards);
+
+    storyCards.forEach(card => observerCards.observe(card));
 });
 
 // Image preview functionality

@@ -83,16 +83,38 @@
             <span class="close">&times;</span>
             <div class="modal-body">
                 <img id="modalImage" src="" alt="Story Image">
-                <h2 id="modalName"></h2>
-                <p id="modalCity"></p>
-                <p id="modalMessage"></p>
-                <button id="modalLikeBtn" class="like-btn">
-                    <span id="modalLikeCount">0</span> ❤️
+                <div class="content-wrapper">
+                    <h2 id="modalName"></h2>
+                    <p class="story-city" id="modalCity"></p>
+                    <p class="story-message" id="modalMessage"></p>
+                    <button id="modalLikeBtn" class="like-btn">
+                        <span id="modalLikeCount">0</span> ❤️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-modal">
+        <div class="success-modal-content">
+            <span class="close">&times;</span>
+            <div class="success-modal-header">
+                <h2></h2>
+            </div>
+            <div class="success-modal-body">
+                <img class="success-story-image" src="" alt="Story Image">
+                <div class="success-story-place"></div>
+                <div class="success-story-message"></div>
+                <a href="#" class="read-more-text">Read more...</a>
+                <button class="share-btn">
+                    <i class="fas fa-share-alt"></i>
+                    Share Story
                 </button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html> 

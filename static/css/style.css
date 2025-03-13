@@ -719,7 +719,7 @@ input:focus, textarea:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 1000;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -732,16 +732,16 @@ input:focus, textarea:focus {
 .modal-content {
     position: relative;
     background: white;
-    margin: 5% auto;
-    padding: 2rem;
     width: 90%;
-    max-width: 800px;
+    max-width: 600px;
+    max-height: 85vh;
+    margin: 5vh auto;
     border-radius: 20px;
-    max-height: 90vh;
-    overflow-y: auto;
-    transform: translateY(50px);
+    overflow: hidden;
+    transform: translateY(30px);
     opacity: 0;
-    transition: all 0.5s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .modal.visible .modal-content {
@@ -751,29 +751,149 @@ input:focus, textarea:focus {
 
 .close {
     position: absolute;
-    right: 1.5rem;
-    top: 1.5rem;
-    font-size: 2rem;
+    right: 15px;
+    top: 15px;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
     cursor: pointer;
-    color: #666;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    z-index: 2;
     transition: all 0.3s ease;
 }
 
 .close:hover {
-    color: var(--primary-color);
     transform: rotate(90deg);
+    background: rgba(0, 0, 0, 0.7);
 }
 
 .modal-body {
-    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .modal-body img {
     width: 100%;
-    max-height: 500px;
+    height: 300px;
     object-fit: cover;
-    border-radius: 12px;
+    display: block;
+}
+
+.content-wrapper {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(85vh - 300px);
+}
+
+.modal-body h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.modal-body .story-city {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.modal-body .story-message {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #444;
     margin-bottom: 1.5rem;
+}
+
+.modal-body .like-btn {
+    margin: 0;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Mobile Modal Styles */
+@media screen and (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 2.5vh auto;
+        max-height: 95vh;
+    }
+
+    .modal-body img {
+        height: 250px;
+    }
+
+    .content-wrapper {
+        max-height: calc(95vh - 250px);
+        padding: 1.2rem;
+    }
+
+    .modal-body h2 {
+        font-size: 1.3rem;
+    }
+
+    .modal-body .story-message {
+        font-size: 0.95rem;
+    }
+}
+
+/* Small Phone Styles */
+@media screen and (max-width: 380px) {
+    .modal-content {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        height: 100vh;
+        max-height: 100vh;
+    }
+
+    .modal-body img {
+        height: 200px;
+    }
+
+    .content-wrapper {
+        max-height: calc(100vh - 200px);
+        padding: 1rem;
+    }
+
+    .close {
+        right: 10px;
+        top: 10px;
+        width: 30px;
+        height: 30px;
+        font-size: 20px;
+    }
+}
+
+/* Landscape Mode */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+    .modal-content {
+        max-width: 90%;
+        max-height: 90vh;
+        margin: 5vh auto;
+    }
+
+    .modal-body {
+        flex-direction: row;
+        height: auto;
+    }
+
+    .modal-body img {
+        width: 50%;
+        height: auto;
+        max-height: 80vh;
+    }
+
+    .content-wrapper {
+        width: 50%;
+        max-height: 80vh;
+        padding: 1.5rem;
+    }
 }
 
 /* View All Button */
@@ -1015,5 +1135,421 @@ textarea::placeholder {
 @keyframes textGradient {
     to {
         background-position: 200% center;
+    }
+}
+
+/* All Stories Page Styles */
+.all-stories-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+}
+
+.all-stories-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.all-stories-header h1 {
+    font-size: 3rem;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textGradient 5s linear infinite;
+}
+
+.back-btn {
+    position: absolute;
+    left: 0;
+    top: 1rem;
+    padding: 0.8rem 1.5rem;
+    background: white;
+    color: var(--text-color);
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 500;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    color: var(--primary-color);
+}
+
+.search-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.5rem;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 5px 20px rgba(255, 77, 77, 0.15);
+    transform: translateY(-2px);
+}
+
+.search-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.stories-grid-wide {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.no-stories {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.no-stories p {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.clear-search, .share-story-btn {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.clear-search:hover, .share-story-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced Story Card Styles for All Stories Page */
+.stories-grid-wide .story-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+}
+
+.stories-grid-wide .story-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.stories-grid-wide .story-image {
+    height: 300px;
+    border-radius: 20px 20px 0 0;
+}
+
+.stories-grid-wide .story-details {
+    padding: 2rem;
+}
+
+/* Mobile Styles for All Stories Page */
+@media screen and (max-width: 1024px) {
+    .stories-grid-wide {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .all-stories-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .back-btn {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+        font-size: 1rem;
+        padding: 0.8rem 2.5rem 0.8rem 1.2rem;
+    }
+
+    .stories-grid-wide .story-image {
+        height: 250px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .all-stories-container {
+        padding: 1rem;
+    }
+
+    .all-stories-header h1 {
+        font-size: 2rem;
+    }
+
+    .search-input {
+        font-size: 0.9rem;
+    }
+
+    .stories-grid-wide .story-image {
+        height: 200px;
+    }
+
+    .stories-grid-wide .story-details {
+        padding: 1.5rem;
+    }
+}
+
+/* Enhanced Animation for Story Cards */
+.stories-grid-wide .story-card {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.6s ease forwards;
+    animation-delay: calc(var(--card-index) * 0.1s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stories-grid-wide .story-card {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Success Modal Styles */
+.success-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.success-modal.visible {
+    opacity: 1;
+}
+
+.success-modal-content {
+    position: relative;
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    margin: 5vh auto;
+    border-radius: 20px;
+    overflow: hidden;
+    transform: translateY(30px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.success-modal.visible .success-modal-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.success-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.success-modal-header h2 {
+    font-size: 1.8rem;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.success-modal-body {
+    padding: 1.5rem;
+}
+
+.success-story-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.success-story-place {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.success-story-message {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.read-more-text {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.read-more-text:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+.share-btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.share-btn i {
+    font-size: 1.2rem;
+}
+
+.share-instagram {
+    background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+}
+
+.share-facebook {
+    background: #1877f2;
+}
+
+.share-stories {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+}
+
+.read-more-btn {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: var(--text-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 100%;
+}
+
+.share-btn:hover, .read-more-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Mobile Styles for Success Modal */
+@media screen and (max-width: 768px) {
+    .success-modal-content {
+        width: 95%;
+        margin: 2.5vh auto;
+    }
+
+    .success-modal-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .success-story-image {
+        height: 200px;
+    }
+
+    .success-modal-actions {
+        flex-direction: column;
+    }
+
+    .share-btn {
+        width: 100%;
+    }
+}
+
+/* Small Phone Styles */
+@media screen and (max-width: 380px) {
+    .success-modal-content {
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .success-modal-header {
+        padding: 1rem;
+    }
+
+    .success-modal-body {
+        padding: 1rem;
+    }
+
+    .success-story-image {
+        height: 180px;
+    }
+
+    .success-modal-actions {
+        padding: 1rem;
     }
 } 

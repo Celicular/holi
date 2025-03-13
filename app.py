@@ -125,8 +125,37 @@ def like_story(story_id):
 
 @app.route('/all_stories')
 def all_stories():
-    # This will be implemented later
-    return "Coming Soon!"
+    search_query = request.args.get('q', '').strip()
+    session_id = session.get('session_id')
+    
+    db = get_db()
+    cursor = db.cursor()
+    
+    if search_query:
+        # Search in both name and city
+        cursor.execute('''
+            SELECT stories.id, stories.name, stories.city, stories.message, 
+                   stories.likes, stories.created_at,
+                   CASE WHEN likes.id IS NOT NULL THEN 1 ELSE 0 END as user_has_liked
+            FROM stories 
+            LEFT JOIN likes ON stories.id = likes.story_id AND likes.session_id = ?
+            WHERE LOWER(stories.name) LIKE LOWER(?) OR LOWER(stories.city) LIKE LOWER(?)
+            ORDER BY stories.created_at DESC
+        ''', (session_id, f'%{search_query}%', f'%{search_query}%'))
+    else:
+        cursor.execute('''
+            SELECT stories.id, stories.name, stories.city, stories.message, 
+                   stories.likes, stories.created_at,
+                   CASE WHEN likes.id IS NOT NULL THEN 1 ELSE 0 END as user_has_liked
+            FROM stories 
+            LEFT JOIN likes ON stories.id = likes.story_id AND likes.session_id = ?
+            ORDER BY stories.created_at DESC
+        ''', (session_id,))
+    
+    stories = [dict(row) for row in cursor.fetchall()]
+    db.close()
+    
+    return render_template('all_stories.html', stories=stories, search_query=search_query)
 
 if __name__ == '__main__':
     app.run(debug=True) 

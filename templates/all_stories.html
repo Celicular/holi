@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Holi Stories</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="all-stories-container">
+        <header class="all-stories-header">
+            <h1>All Holi Stories</h1>
+            <a href="{{ url_for('home') }}" class="back-btn">← Back to Home</a>
+            <form class="search-form" method="GET" action="{{ url_for('all_stories') }}">
+                <div class="search-wrapper">
+                    <input type="text" 
+                           name="q" 
+                           placeholder="Search by name or city..."
+                           value="{{ search_query }}"
+                           class="search-input">
+                    <button type="submit" class="search-btn">
+                        <span>🔍</span>
+                    </button>
+                </div>
+            </form>
+        </header>
+
+        <div class="stories-grid-wide">
+            {% if stories %}
+                {% for story in stories %}
+                <div class="story-card" data-story-id="{{ story.id }}" onclick="showStoryModal('{{ story.id }}')">
+                    <div class="story-image">
+                        {% for ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                        <img src="{{ url_for('static', filename='uploads/' + story.id|string + '/' + story.id|string + '.' + ext) }}" 
+                             alt="Holi Story Image"
+                             onerror="this.style.display='none'"
+                             onload="this.style.display='block'">
+                        {% endfor %}
+                    </div>
+                    <div class="story-details">
+                        <h3>{{ story.name }}</h3>
+                        <p class="story-city">{{ story.city }}</p>
+                        <p class="story-preview">{{ story.message[:200] }}...</p>
+                        <div class="story-actions">
+                            <button class="like-btn" onclick="event.stopPropagation(); likeStory('{{ story.id }}')" data-likes="{{ story.likes }}">
+                                <span class="like-count">{{ story.likes }}</span> ❤️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-stories">
+                    {% if search_query %}
+                        <p>No stories found for "{{ search_query }}"</p>
+                        <a href="{{ url_for('all_stories') }}" class="clear-search">Clear Search</a>
+                    {% else %}
+                        <p>No stories shared yet. Be the first one!</p>
+                        <a href="{{ url_for('home') }}" class="share-story-btn">Share Your Story</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Story Modal -->
+    <div id="storyModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Story Image">
+                <div class="content-wrapper">
+                    <h2 id="modalName"></h2>
+                    <p class="story-city" id="modalCity"></p>
+                    <p class="story-message" id="modalMessage"></p>
+                    <button id="modalLikeBtn" class="like-btn">
+                        <span id="modalLikeCount">0</span> ❤️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
