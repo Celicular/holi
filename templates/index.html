@@ -15,32 +15,84 @@
         <div class="right-section">
             <div class="text-content">
                 <div class="small-text">Web-sharks wishes you,</div>
-                <div class="big-letter">Celebrate holi <br> with us</div>
+                <div class="big-letter">HAPPY HOLI <br> 2K24</div>
                 <div class="story-text">Share your holi story with us</div>
             </div>
             <form class="holi-form" method="POST" action="{{ url_for('submit_story') }}" enctype="multipart/form-data">
-                <div class="form-group">
-                    <input type="text" id="name" name="name" placeholder="Your Name" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" id="city" name="city" placeholder="Your City" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="city" name="city" placeholder="Your City" required>
+                    </div>
                 </div>
                 <div class="form-group">
                     <textarea id="message" name="message" placeholder="Share your colorful Holi story (up to 1000 words)" maxlength="10000" required></textarea>
                     <div class="word-count">0 / 1000 words</div>
                 </div>
                 <div class="form-group">
-                    <label for="image" class="image-upload-label">
+                    <input type="file" id="image" name="image" accept="image/*" class="image-input" required>
+                    <div class="image-upload-label" onclick="document.getElementById('image').click()">
+                        <div class="upload-icon">📸</div>
                         <span>Upload your Holi moment</span>
-                        <small>(Max 2MB)</small>
-                    </label>
-                    <input type="file" id="image" name="image" accept="image/*" class="image-input">
+                        <small>(Max 2MB, Required)</small>
+                    </div>
                     <div id="image-preview" class="image-preview"></div>
                 </div>
-                <button type="submit" class="submit-btn">Share Your Story</button>
+                <button type="submit" class="submit-btn"><span>Share Your Story</span></button>
             </form>
         </div>
     </div>
+
+    <!-- Stories Section -->
+    <div class="stories-section">
+        <h2>Recent Holi Stories</h2>
+        <div class="stories-grid">
+            {% for story in stories %}
+            <div class="story-card" data-story-id="{{ story.id }}" onclick="showStoryModal('{{ story.id }}')">
+                <div class="story-image">
+                    {% for ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                    <img src="{{ url_for('static', filename='uploads/' + story.id|string + '/' + story.id|string + '.' + ext) }}" 
+                         alt="Holi Story Image"
+                         onerror="this.style.display='none'"
+                         onload="this.style.display='block'">
+                    {% endfor %}
+                </div>
+                <div class="story-details">
+                    <h3>{{ story.name }}</h3>
+                    <p class="story-city">{{ story.city }}</p>
+                    <p class="story-preview">{{ story.message[:150] }}...</p>
+                    <div class="story-actions">
+                        <button class="like-btn" onclick="event.stopPropagation(); likeStory('{{ story.id }}')" data-likes="{{ story.likes }}">
+                            <span class="like-count">{{ story.likes }}</span> ❤️
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="view-all-container">
+            <a href="{{ url_for('all_stories') }}" class="view-all-btn">View All Stories</a>
+        </div>
+    </div>
+
+    <!-- Story Modal -->
+    <div id="storyModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Story Image">
+                <h2 id="modalName"></h2>
+                <p id="modalCity"></p>
+                <p id="modalMessage"></p>
+                <button id="modalLikeBtn" class="like-btn">
+                    <span id="modalLikeCount">0</span> ❤️
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html> 

@@ -82,12 +82,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     form.addEventListener('submit', function(e) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent default form submission
         
-        // Disable submit button and show loading state
+        const submitBtn = this.querySelector('.submit-btn');
+        if (submitBtn.disabled) {
+            return;
+        }
+        
         submitBtn.disabled = true;
-        const originalBtnText = submitBtn.textContent;
-        submitBtn.textContent = 'Uploading...';
+        submitBtn.innerHTML = '<span><div class="loading-spinner"></div>Sharing...</span>';
         
         const formData = new FormData(form);
         
@@ -102,20 +105,207 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.reset();
                 imagePreview.innerHTML = '';
                 updateWordCount();
+                // Reload the page after a short delay to show the new story
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             } else {
                 showAlert(data.message || 'An error occurred', 'error');
             }
         })
         .catch(error => {
+            console.error('Error:', error);
             showAlert('An error occurred while submitting your story', 'error');
         })
         .finally(() => {
-            // Re-enable submit button and restore text
             submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
+            submitBtn.innerHTML = '<span>Share Your Story</span>';
         });
     });
 
     messageTextarea.addEventListener('input', updateWordCount);
     imageInput.addEventListener('change', handleImageUpload);
-}); 
+
+    // Intersection Observer for story cards and sections
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                if (entry.target.tagName === 'H2') {
+                    // Trigger story cards animation after section title
+                    const cards = document.querySelectorAll('.story-card');
+                    cards.forEach((card, index) => {
+                        setTimeout(() => {
+                            card.classList.add('visible');
+                        }, index * 100); // Stagger the animations
+                    });
+                }
+            }
+        });
+    }, observerOptions);
+
+    // Observe section title
+    const sectionTitle = document.querySelector('.stories-section h2');
+    if (sectionTitle) observer.observe(sectionTitle);
+
+    // Observe view all button container
+    const viewAllContainer = document.querySelector('.view-all-container');
+    if (viewAllContainer) observer.observe(viewAllContainer);
+
+    // Enhanced modal animations
+    const modal = document.getElementById('storyModal');
+    const modalContent = modal.querySelector('.modal-content');
+
+    function showModal() {
+        modal.style.display = 'block';
+        // Force reflow
+        modal.offsetHeight;
+        modal.classList.add('visible');
+    }
+
+    function hideModal() {
+        modal.classList.remove('visible');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300); // Match the CSS transition duration
+    }
+
+    // Update modal show/hide functions
+    window.showStoryModal = function(storyId) {
+        fetch(`/get_story/${parseInt(storyId)}`)
+            .then(response => response.json())
+            .then(story => {
+                // Try to load image with different extensions
+                const modalImage = document.getElementById('modalImage');
+                const extensions = ['jpg', 'jpeg', 'png', 'gif'];
+                let loadedImage = false;
+
+                function tryNextExtension(index) {
+                    if (index >= extensions.length || loadedImage) return;
+                    
+                    modalImage.src = `/static/uploads/${story.id}/${story.id}.${extensions[index]}`;
+                    modalImage.onerror = () => tryNextExtension(index + 1);
+                    modalImage.onload = () => loadedImage = true;
+                }
+
+                tryNextExtension(0);
+                
+                document.getElementById('modalName').textContent = story.name;
+                document.getElementById('modalCity').textContent = story.city;
+                document.getElementById('modalMessage').textContent = story.message;
+                document.getElementById('modalLikeCount').textContent = story.likes;
+                document.getElementById('modalLikeBtn').setAttribute('data-story-id', story.id);
+                document.getElementById('modalLikeBtn').classList.toggle('liked', story.user_has_liked);
+                showModal();
+            });
+    }
+
+    // Update close button and window click handlers
+    document.querySelector('.close').onclick = hideModal;
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            hideModal();
+        }
+    }
+
+    // Form animations
+    const formGroups = document.querySelectorAll('.form-group');
+    formGroups.forEach((group, index) => {
+        group.style.opacity = '0';
+        group.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            group.style.transition = 'all 0.5s ease';
+            group.style.opacity = '1';
+            group.style.transform = 'translateY(0)';
+        }, 300 + index * 100);
+    });
+
+    // Image upload preview animation
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.style.opacity = '0';
+                imagePreview.style.transform = 'scale(0.9)';
+                imagePreview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; height: auto;">`;
+                
+                // Force reflow
+                imagePreview.offsetHeight;
+                
+                imagePreview.style.transition = 'all 0.5s ease';
+                imagePreview.style.opacity = '1';
+                imagePreview.style.transform = 'scale(1)';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+
+// Image preview functionality
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('image-preview');
+            preview.style.display = 'block';
+            preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; height: auto;">`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Word count functionality
+document.getElementById('message').addEventListener('input', function(e) {
+    const words = e.target.value.trim().split(/\s+/).length;
+    document.querySelector('.word-count').textContent = `${words} / 1000 words`;
+});
+
+// Like functionality
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function likeStory(storyId) {
+    const sessionId = getCookie('session_id');
+    if (!sessionId) {
+        // Create a session ID if it doesn't exist
+        const newSessionId = Math.random().toString(36).substring(2);
+        document.cookie = `session_id=${newSessionId}; path=/; max-age=86400`; // 24 hours
+    }
+
+    fetch(`/like_story/${parseInt(storyId)}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            session_id: getCookie('session_id')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update like count in card and modal
+            const likeBtn = document.querySelector(`.story-card[data-story-id="${storyId}"] .like-btn`);
+            const likeCount = likeBtn.querySelector('.like-count');
+            likeCount.textContent = data.likes;
+            likeBtn.classList.toggle('liked', data.user_has_liked);
+
+            // Update modal if open
+            if (modal.style.display === 'block') {
+                document.getElementById('modalLikeCount').textContent = data.likes;
+                document.getElementById('modalLikeBtn').classList.toggle('liked', data.user_has_liked);
+            }
+        }
+    });
+} 
