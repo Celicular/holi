@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Website</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <div class="left-section">
+            <img src="{{ url_for('static', filename='images/COLLAGE.png') }}" alt="Collage Image" class="centered-image">
+        </div>
+        <div class="right-section">
+            <div class="text-content">
+                <div class="small-text">Web-sharks wishes you,</div>
+                <div class="big-letter">Celebrate holi <br> with us</div>
+                <div class="story-text">Share your holi story with us</div>
+            </div>
+            <form class="holi-form" method="POST" action="{{ url_for('submit_story') }}" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input type="text" id="name" name="name" placeholder="Your Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="city" name="city" placeholder="Your City" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="message" name="message" placeholder="Share your colorful Holi story (up to 1000 words)" maxlength="10000" required></textarea>
+                    <div class="word-count">0 / 1000 words</div>
+                </div>
+                <div class="form-group">
+                    <label for="image" class="image-upload-label">
+                        <span>Upload your Holi moment</span>
+                        <small>(Max 2MB)</small>
+                    </label>
+                    <input type="file" id="image" name="image" accept="image/*" class="image-input">
+                    <div id="image-preview" class="image-preview"></div>
+                </div>
+                <button type="submit" class="submit-btn">Share Your Story</button>
+            </form>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
